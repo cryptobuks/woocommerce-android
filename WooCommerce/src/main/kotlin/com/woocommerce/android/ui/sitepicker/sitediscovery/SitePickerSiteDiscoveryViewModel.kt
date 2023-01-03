@@ -258,6 +258,4 @@ class SitePickerSiteDiscoveryViewModel @Inject constructor(
         val siteAddress: String,
         val isJetpackInstalled: Boolean
     ) : MultiLiveEvent.Event()
-
-    data class ShowJetpackConnectionError(val siteAddress: String) : MultiLiveEvent.Event()
 }
