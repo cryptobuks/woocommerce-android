@@ -63,7 +63,6 @@ class SitePickerSiteDiscoveryViewModel @Inject constructor(
     val viewState = stepFlow.transformLatest { step ->
         when (step) {
             Step.AddressInput -> prepareAddressViewState()
-            Step.JetpackUnavailable -> prepareJetpackUnavailableState()
             Step.NotWordpress -> prepareNotWordpressSiteState()
         }
     }.asLiveData()
@@ -124,25 +123,6 @@ class SitePickerSiteDiscoveryViewModel @Inject constructor(
             launch { emitViewState() }
             launch { handleAddressValidationError() }
         }
-    }
-
-    private suspend fun FlowCollector<ViewState>.prepareJetpackUnavailableState() {
-        emit(
-            ViewState.ErrorState(
-                siteAddress = siteAddressFlow.value,
-                message = resourceProvider.getString(R.string.login_jetpack_required_text, siteAddressFlow.value),
-                imageResourceId = R.drawable.img_login_jetpack_required,
-                primaryButtonText = resourceProvider.getString(R.string.login_jetpack_install),
-                primaryButtonAction = {
-                    fetchedSiteUrl.let { url ->
-                        requireNotNull(url)
-                        triggerEvent(StartWebBasedJetpackInstallation(url))
-                    }
-                },
-                secondaryButtonText = resourceProvider.getString(R.string.login_try_another_account),
-                secondaryButtonAction = ::logout
-            )
-        )
     }
 
     private suspend fun FlowCollector<ViewState>.prepareNotWordpressSiteState() {
@@ -230,13 +210,6 @@ class SitePickerSiteDiscoveryViewModel @Inject constructor(
         }
     }
 
-    private fun navigateToJetpackConnectionError() {
-        fetchedSiteUrl.let { url ->
-            requireNotNull(url)
-            triggerEvent(ShowJetpackConnectionError(url))
-        }
-    }
-
     private fun logout() {
         launch {
             accountRepository.logout().let {
@@ -248,7 +221,7 @@ class SitePickerSiteDiscoveryViewModel @Inject constructor(
     }
 
     private enum class Step {
-        AddressInput, JetpackUnavailable, NotWordpress
+        AddressInput, NotWordpress
     }
 
     sealed class ViewState {
